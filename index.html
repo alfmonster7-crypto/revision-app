@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Revision 26">
+<meta name="theme-color" content="#0D0C0A">
+<link rel="manifest" href="manifest.json">
+<title>Alfie's Revision 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --maths:#3B82F6;--englang:#F59E0B;--englit:#10B981;--drama:#A78BFA;
+  --pe:#F87171;--physics:#22D3EE;--biology:#4ADE80;--chemistry:#FBBF24;
+  --pp:#475569;--exam-col:#EF4444;--accent:#C8A96E;
+  --prox-5:#2D2A14;--prox-2:#2D1F0E;--prox-1:#2D1414;--prox-exam:#3D1414;
+  --bg:#0D0C0A;--surface:#161512;--border:#2A2722;--text:#F5F0E8;--muted:#6B6560;
+  --done-overlay: rgba(13,12,10,0.55);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;overflow:hidden;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);display:flex;flex-direction:column;}
+
+/* ── NAV ── */
+nav{
+  display:flex;align-items:stretch;background:var(--surface);
+  border-bottom:1px solid var(--border);flex-shrink:0;
+  padding: env(safe-area-inset-top,0) 0 0;
+  overflow-x:auto;scrollbar-width:none;
+}
+nav::-webkit-scrollbar{display:none;}
+.nav-btn{
+  font-family:'DM Mono',monospace;font-size:0.68rem;font-weight:500;
+  letter-spacing:0.06em;text-transform:uppercase;white-space:nowrap;
+  padding:0.75rem 1.1rem;border:none;background:none;color:var(--muted);
+  cursor:pointer;border-bottom:2px solid transparent;transition:all 0.15s;flex-shrink:0;
+}
+.nav-btn:hover{color:var(--text);}
+.nav-btn.active{color:var(--accent);border-bottom-color:var(--accent);}
+
+/* ── VIEWS ── */
+.view{display:none;flex:1;overflow:hidden;flex-direction:column;}
+.view.active{display:flex;}
+
+/* ── COUNTDOWN VIEW ── */
+#v-countdown{align-items:center;justify-content:flex-start;padding:1.5rem 1rem 1rem;overflow-y:auto;}
+.cd-eyebrow{font-family:'DM Mono',monospace;font-size:0.65rem;letter-spacing:0.18em;text-transform:uppercase;color:var(--accent);margin-bottom:0.9rem;text-align:center;}
+.cd-heading{font-family:'DM Serif Display',serif;font-size:clamp(1.8rem,6vw,3.2rem);line-height:1.0;letter-spacing:-0.02em;text-align:center;margin-bottom:0.25rem;}
+.cd-heading em{font-style:italic;color:var(--accent);}
+.cd-sub{font-family:'DM Mono',monospace;font-size:0.7rem;color:var(--muted);letter-spacing:0.07em;text-transform:uppercase;text-align:center;margin-bottom:1.5rem;}
+.cd-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border);border:1px solid var(--border);border-radius:8px;overflow:hidden;width:100%;max-width:600px;margin-bottom:1px;}
+.cd-unit{background:var(--surface);padding:1.2rem 0.5rem 1rem;display:flex;flex-direction:column;align-items:center;gap:0.3rem;}
+.cd-num{font-family:'DM Serif Display',serif;font-size:clamp(2rem,8vw,3.8rem);line-height:1;letter-spacing:-0.03em;transition:color 0.2s;}
+.cd-num.flash{animation:numFlash 0.3s ease;}
+.cd-lbl{font-family:'DM Mono',monospace;font-size:0.6rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);}
+@keyframes numFlash{0%{transform:scale(1)}40%{transform:scale(1.06);color:var(--accent)}100%{transform:scale(1)}}
+.cd-exams{background:var(--surface);border:1px solid var(--border);border-top:none;border-radius:0 0 8px 8px;width:100%;max-width:600px;overflow:hidden;margin-bottom:1.2rem;}
+.cd-exams-hdr{padding:0.45rem 1rem;background:var(--border);font-family:'DM Mono',monospace;font-size:0.6rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);}
+.cd-exam-row{display:flex;align-items:center;justify-content:space-between;padding:0.55rem 1rem;border-bottom:1px solid var(--border);transition:background 0.15s;}
+.cd-exam-row:last-child{border-bottom:none;}
+.cd-exam-row.done{opacity:0.3;}
+.cd-exam-row.next{background:rgba(200,169,110,0.07);}
+.cd-exam-left{display:flex;align-items:center;gap:0.6rem;font-size:0.8rem;font-weight:500;}
+.cd-dot{width:8px;height:8px;border-radius:2px;flex-shrink:0;}
+.cd-board{font-size:0.6rem;color:var(--muted);font-family:'DM Mono',monospace;}
+.cd-exam-right{display:flex;gap:1.2rem;align-items:center;}
+.cd-edate{font-family:'DM Mono',monospace;font-size:0.65rem;color:var(--muted);}
+.cd-days{font-family:'DM Mono',monospace;font-size:0.65rem;color:var(--accent);}
+.cd-days.soon{color:var(--englang);}
+.cd-days.hot{color:var(--pe);}
+.cd-days.done-lbl{color:var(--muted);}
+.cd-prog{width:100%;max-width:600px;margin-bottom:0.8rem;}
+.cd-prog-labels{display:flex;justify-content:space-between;font-family:'DM Mono',monospace;font-size:0.6rem;color:var(--muted);margin-bottom:0.35rem;}
+.cd-track{height:3px;background:var(--border);border-radius:2px;overflow:hidden;}
+.cd-fill{height:100%;background:linear-gradient(90deg,#8B6F47,var(--accent));border-radius:2px;transition:width 1s ease;}
+.cd-clock{font-family:'DM Mono',monospace;font-size:0.65rem;color:var(--muted);text-align:center;margin-bottom:0.8rem;}
+.cd-clock span{color:var(--accent);}
+.cd-quote{font-family:'DM Serif Display',serif;font-style:italic;font-size:clamp(0.85rem,2.2vw,1.1rem);color:var(--muted);text-align:center;min-height:2.4em;transition:opacity 0.4s;padding:0 0.5rem;}
+
+/* ── TIMETABLE VIEW ── */
+#v-timetable{flex-direction:column;}
+.tt-filters{display:flex;gap:0.35rem;padding:0.6rem 0.75rem;background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0;overflow-x:auto;scrollbar-width:none;}
+.tt-filters::-webkit-scrollbar{display:none;}
+.flt-btn{font-family:'DM Mono',monospace;font-size:0.65rem;font-weight:500;letter-spacing:0.05em;text-transform:uppercase;padding:0.35rem 0.85rem;border:1.5px solid var(--border);background:none;color:var(--muted);cursor:pointer;border-radius:4px;white-space:nowrap;transition:all 0.15s;flex-shrink:0;}
+.flt-btn:hover{border-color:var(--text);color:var(--text);}
+.flt-btn.active{background:var(--accent);border-color:var(--accent);color:#0D0C0A;font-weight:700;}
+.tt-scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:0.75rem;}
+
+/* day card */
+.day-card{border:1px solid var(--border);border-radius:7px;margin-bottom:0.6rem;overflow:hidden;transition:opacity 0.3s;}
+.day-card.past{opacity:0.38;}
+.day-card.today{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent);}
+.day-card.exam-day-card{border-color:var(--exam-col);}
+.day-card-header{display:flex;align-items:center;justify-content:space-between;padding:0.5rem 0.75rem;background:var(--surface);}
+.day-card-header.prox-5{background:var(--prox-5);}
+.day-card-header.prox-2{background:var(--prox-2);}
+.day-card-header.prox-1{background:var(--prox-1);}
+.day-card-header.prox-exam{background:var(--prox-exam);}
+.day-date{font-weight:600;font-size:0.83rem;}
+.day-meta{display:flex;align-items:center;gap:0.5rem;}
+.phase-pill{font-family:'DM Mono',monospace;font-size:0.55rem;letter-spacing:0.06em;text-transform:uppercase;padding:0.12rem 0.45rem;border-radius:3px;font-weight:500;}
+.pill-school{background:#1E3A5F;color:#93C5FD;}
+.pill-easter{background:#14532D;color:#86EFAC;}
+.pill-back{background:#3D3510;color:#FDE68A;}
+.pill-leave{background:#5B1A1A;color:#FCA5A5;}
+.prox-badge{font-family:'DM Mono',monospace;font-size:0.58rem;padding:0.12rem 0.42rem;border-radius:3px;white-space:nowrap;font-weight:500;}
+.badge-n{background:#1E2530;color:var(--muted);}
+.badge-p5{background:#3D3510;color:#FDE68A;}
+.badge-p2{background:#3D2510;color:#FED7AA;}
+.badge-p1{background:#3D1515;color:#FCA5A5;}
+.badge-ex{background:var(--exam-col);color:#fff;font-weight:700;}
+.day-body{padding:0.55rem 0.75rem;background:var(--bg);display:flex;flex-direction:column;gap:0.35rem;}
+.slots{display:flex;flex-wrap:wrap;gap:0.3rem;}
+.slot{display:inline-flex;flex-direction:column;padding:0.28rem 0.6rem;border-radius:4px;font-size:0.7rem;font-weight:600;color:#fff;line-height:1.35;min-width:80px;}
+.slot .s-subj{font-size:0.7rem;font-weight:700;}
+.slot .s-task{font-size:0.6rem;font-weight:400;opacity:0.88;}
+.slot .s-cnt{font-size:0.56rem;font-weight:500;opacity:0.8;font-family:'DM Mono',monospace;}
+.slot-Maths{background:var(--maths);}
+.slot-EngLang{background:var(--englang);color:#1C1917;}
+.slot-EngLit{background:var(--englit);}
+.slot-Drama{background:var(--drama);}
+.slot-PE{background:var(--pe);}
+.slot-Physics{background:var(--physics);color:#0D0C0A;}
+.slot-Biology{background:var(--biology);color:#0D0C0A;}
+.slot-Chemistry{background:var(--chemistry);color:#1C1917;}
+.slot-pp{background:var(--pp);}
+.slot-exam-chip{background:var(--exam-col);font-size:0.75rem;padding:0.35rem 0.9rem;}
+.times-row{font-family:'DM Mono',monospace;font-size:0.62rem;color:var(--muted);}
+.exam-banner-card{display:flex;align-items:center;gap:0.5rem;font-weight:700;font-size:0.83rem;color:var(--pe);}
+.today-badge{font-family:'DM Mono',monospace;font-size:0.6rem;background:var(--accent);color:#0D0C0A;padding:0.12rem 0.45rem;border-radius:3px;font-weight:700;}
+.done-stripe{font-family:'DM Mono',monospace;font-size:0.62rem;color:var(--muted);font-style:italic;}
+
+/* today jump btn */
+.jump-today{
+  position:fixed;bottom:calc(1.2rem + env(safe-area-inset-bottom,0));right:1.2rem;
+  background:var(--accent);color:#0D0C0A;font-family:'DM Mono',monospace;
+  font-size:0.65rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;
+  padding:0.6rem 1rem;border:none;border-radius:99px;cursor:pointer;
+  box-shadow:0 4px 20px rgba(200,169,110,0.3);display:none;transition:opacity 0.2s;
+  z-index:100;
+}
+.jump-today.show{display:block;}
+
+/* legend strip */
+.legend-strip{display:flex;flex-wrap:wrap;gap:0.4rem 1rem;padding:0.55rem 0.75rem;border-bottom:1px solid var(--border);background:var(--surface);flex-shrink:0;}
+.lg{display:flex;align-items:center;gap:0.35rem;font-size:0.65rem;color:var(--muted);}
+.lg-dot{width:9px;height:9px;border-radius:2px;}
+
+/* ── STATS VIEW ── */
+#v-stats{overflow-y:auto;padding:1rem 0.75rem 2rem;}
+.stat-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:0.6rem;margin-bottom:1.2rem;}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:0.9rem 1rem;}
+.stat-n{font-family:'DM Serif Display',serif;font-size:1.8rem;line-height:1;color:var(--accent);margin-bottom:0.2rem;}
+.stat-l{font-family:'DM Mono',monospace;font-size:0.6rem;text-transform:uppercase;letter-spacing:0.07em;color:var(--muted);}
+.subj-prog{margin-top:0.4rem;}
+.subj-row{display:flex;align-items:center;gap:0.6rem;padding:0.45rem 0;border-bottom:1px solid var(--border);}
+.subj-row:last-child{border-bottom:none;}
+.subj-name{font-size:0.8rem;font-weight:500;min-width:90px;}
+.subj-bar-wrap{flex:1;height:6px;background:var(--border);border-radius:3px;overflow:hidden;}
+.subj-bar{height:100%;border-radius:3px;}
+.subj-count{font-family:'DM Mono',monospace;font-size:0.65rem;color:var(--muted);min-width:32px;text-align:right;}
+.section-title{font-family:'DM Serif Display',serif;font-size:1.1rem;margin-bottom:0.6rem;margin-top:0.2rem;}
+</style>
+</head>
+<body>
+
+<nav>
+  <button class="nav-btn active" onclick="switchView('countdown',this)">⏱ Countdown</button>
+  <button class="nav-btn" onclick="switchView('timetable',this)">📅 Timetable</button>
+  <button class="nav-btn" onclick="switchView('stats',this)">📊 Stats</button>
+</nav>
+
+<!-- COUNTDOWN -->
+<div id="v-countdown" class="view active">
+  <div class="cd-eyebrow">Blundell's School · IGCSE 2026</div>
+  <h1 class="cd-heading">First Exam<br><em>Countdown</em></h1>
+  <p class="cd-sub">Drama · OCR · 8 May 2026 · 13:30</p>
+  <div class="cd-grid">
+    <div class="cd-unit"><div class="cd-num" id="cd-d">—</div><div class="cd-lbl">Days</div></div>
+    <div class="cd-unit"><div class="cd-num" id="cd-h">—</div><div class="cd-lbl">Hours</div></div>
+    <div class="cd-unit"><div class="cd-num" id="cd-m">—</div><div class="cd-lbl">Mins</div></div>
+    <div class="cd-unit"><div class="cd-num" id="cd-s">—</div><div class="cd-lbl">Secs</div></div>
+  </div>
+  <div class="cd-exams">
+    <div class="cd-exams-hdr">All exam sittings</div>
+    <div id="cd-list"></div>
+  </div>
+  <div class="cd-prog">
+    <div class="cd-prog-labels"><span>Revision started</span><span id="cd-pct">—</span></div>
+    <div class="cd-track"><div class="cd-fill" id="cd-fill" style="width:0%"></div></div>
+  </div>
+  <div class="cd-clock" id="cd-clock"></div>
+  <div class="cd-quote" id="cd-quote"></div>
+</div>
+
+<!-- TIMETABLE -->
+<div id="v-timetable" class="view">
+  <div class="tt-filters" id="tt-filters">
+    <button class="flt-btn active" onclick="filterTT('all',this)">All</button>
+    <button class="flt-btn" onclick="filterTT('school',this)">Pre-Easter</button>
+    <button class="flt-btn" onclick="filterTT('easter',this)">Easter Hols</button>
+    <button class="flt-btn" onclick="filterTT('back-at-school',this)">Back at School</button>
+    <button class="flt-btn" onclick="filterTT('exam-leave',this)">Exam Leave</button>
+  </div>
+  <div class="legend-strip">
+    <div class="lg"><span class="lg-dot" style="background:var(--maths)"></span>Maths</div>
+    <div class="lg"><span class="lg-dot" style="background:var(--englang)"></span>Eng Lang</div>
+    <div class="lg"><span class="lg-dot" style="background:var(--englit)"></span>Eng Lit</div>
+    <div class="lg"><span class="lg-dot" style="background:var(--drama)"></span>Drama</div>
+    <div class="lg"><span class="lg-dot" style="background:var(--pe)"></span>PE</div>
+    <div class="lg"><span class="lg-dot" style="background:var(--physics)"></span>Physics</div>
+    <div class="lg"><span class="lg-dot" style="background:var(--biology)"></span>Biology</div>
+    <div class="lg"><span class="lg-dot" style="background:var(--chemistry)"></span>Chemistry</div>
+  </div>
+  <div class="tt-scroll" id="tt-scroll"></div>
+  <button class="jump-today" id="jump-btn" onclick="scrollToToday()">Today ↓</button>
+</div>
+
+<!-- STATS -->
+<div id="v-stats" class="view">
+  <div class="stat-grid" id="stat-grid"></div>
+  <div class="section-title">Sessions per subject</div>
+  <div class="subj-prog" id="subj-prog"></div>
+</div>
+
+<script>
+const DATA = [{"date":"2026-03-11","weekday":"Wed","phase":"school","prox":"normal","slots":[{"type":"study","subj":"Maths","task":"Dr Frost drills \u2014 Red/Amber topics"}],"days_to_exam":58,"next_exam":"Drama","n_slots":1},{"date":"2026-03-12","weekday":"Thu","phase":"school","prox":"normal","slots":[{"type":"study","subj":"Eng Lit","task":"Poetry comparison / prose extract question"}],"days_to_exam":57,"next_exam":"Drama","n_slots":1},{"date":"2026-03-13","weekday":"Fri","phase":"school","prox":"normal","slots":[{"type":"study","subj":"Biology","task":"PMT notes \u2192 active recall flashcards"}],"days_to_exam":56,"next_exam":"Drama","n_slots":1},{"date":"2026-03-16","weekday":"Mon","phase":"school","prox":"normal","slots":[{"type":"pp","subj":"Maths","task":"Past paper \u2014 timed conditions \u2192 self-mark with MS"}],"days_to_exam":53,"next_exam":"Drama","n_slots":1},{"date":"2026-03-17","weekday":"Tue","phase":"school","prox":"normal","slots":[{"type":"study","subj":"Eng Lang","task":"Timed extract analysis + language/structure techniques"}],"days_to_exam":52,"next_exam":"Drama","n_slots":1},{"date":"2026-03-18","weekday":"Wed","phase":"school","prox":"normal","slots":[{"type":"study","subj":"Chemistry","task":"Equations, mechanisms + recall cards"}],"days_to_exam":51,"next_exam":"Drama","n_slots":1},{"date":"2026-03-19","weekday":"Thu","phase":"school","prox":"normal","slots":[{"type":"study","subj":"Physics","task":"PMT notes \u2192 active recall flashcards"}],"days_to_exam":50,"next_exam":"Drama","n_slots":1},{"date":"2026-03-20","weekday":"Fri","phase":"school","prox":"normal","slots":[{"type":"pp","subj":"Eng Lang","task":"Past paper \u2014 timed conditions \u2192 self-mark with MS"}],"days_to_exam":49,"next_exam":"Drama","n_slots":1},{"date":"2026-03-23","weekday":"Mon","phase":"school","prox":"normal","slots":[{"type":"study","subj":"Eng Lang","task":"Timed extract analysis + language/structure techniques"}],"days_to_exam":46,"next_exam":"Drama","n_slots":1},{"date":"2026-03-24","weekday":"Tue","phase":"school","prox":"normal","slots":[{"type":"study","subj":"Maths","task":"Dr Frost drills \u2014 Red/Amber topics"}],"days_to_exam":45,"next_exam":"Drama","n_slots":1},{"date":"2026-03-25","weekday":"Wed","phase":"school","prox":"normal","slots":[{"type":"study","subj":"Chemistry","task":"Equations, mechanisms + recall cards"}],"days_to_exam":44,"next_exam":"Drama","n_slots":1},{"date":"2026-03-26","weekday":"Thu","phase":"school","prox":"normal","slots":[{"type":"pp","subj":"Eng Lit","task":"Past paper \u2014 timed conditions \u2192 self-mark with MS"}],"days_to_exam":43,"next_exam":"Drama","n_slots":1},{"date":"2026-03-27","weekday":"Fri","phase":"easter","prox":"normal","slots":[{"type":"study","subj":"Biology","task":"PMT notes \u2192 active recall flashcards"},{"type":"study","subj":"Physics","task":"PMT notes \u2192 active recall flashcards"},{"type":"study","subj":"Eng Lit","task":"Poetry comparison / prose extract question"},{"type":"study","subj":"PE","task":"Long-answer theory questions (AQA)"}],"days_to_exam":42,"next_exam":"Drama","n_slots":4},{"date":"2026-03-28","weekday":"Sat","phase":"easter","prox":"normal","slots":[{"type":"study","subj":"Physics","task":"PMT notes \u2192 active recall flashcards"},{"type":"study","subj":"Maths","task":"Dr Frost drills \u2014 Red/Amber topics"},{"type":"study","subj":"Eng Lang","task":"Timed extract analysis + language/structure techniques"},{"type":"study","subj":"Biology","task":"PMT notes \u2192 active recall flashcards"}],"days_to_exam":41,"next_exam":"Drama","n_slots":4},{"date":"2026-03-29","weekday":"Sun","phase":"easter","prox":"normal","slots":[{"type":"study","subj":"Drama","task":"Written response / script analysis (Component 2)"},{"type":"study","subj":"Eng Lit","task":"Poetry comparison / prose extract question"},{"type":"study","subj":"PE","task":"Long-answer theory questions (AQA)"},{"type":"study","subj":"Chemistry","task":"Equations, mechanisms + recall cards"}],"days_to_exam":40,"next_exam":"Drama","n_slots":4},{"date":"2026-03-30","weekday":"Mon","phase":"easter","prox":"normal","slots":[{"type":"study","subj":"Drama","task":"Written response / script analysis (Component 2)"},{"type":"study","subj":"Chemistry","task":"Equations, mechanisms + recall cards"},{"type":"study","subj":"Maths","task":"Dr Frost drills \u2014 Red/Amber topics"},{"type":"pp","subj":"Drama","task":"Past paper \u2014 timed conditions \u2192 self-mark with MS"}],"days_to_exam":39,"next_exam":"Drama","n_slots":4},{"date":"2026-03-31","weekday":"Tue","phase":"easter","prox":"normal","slots":[{"type":"study","subj":"Eng Lit","task":"Poetry comparison / prose extract question"},{"type":"study","subj":"PE","task":"Long-answer theory questions (AQA)"},{"type":"study","subj":"Eng Lang","task":"Timed extract analysis + language/structure techniques"},{"type":"study","subj":"Biology","task":"PMT notes \u2192 active recall flashcards"}],"days_to_exam":38,"next_exam":"Drama","n_slots":4},{"date":"2026-04-01","weekday":"Wed","phase":"easter","prox":"normal","slots":[{"type":"study","subj":"PE","task":"Long-answer theory questions (AQA)"},{"type":"study","subj":"Biology","task":"PMT notes \u2192 active recall flashcards"},{"type":"study","subj":"Eng Lit","task":"Poetry comparison / prose extract question"},{"type":"study","subj":"Maths","task":"Dr Frost drills \u2014 Red/Amber topics"}],"days_to_exam":37,"next_exam":"Drama","n_slots":4},{"date":"2026-04-02","weekday":"Thu","phase":"easter","prox":"normal","slots":[{"type":"study","subj":"Chemistry","task":"Equations, mechanisms + recall cards"},{"type":"study","subj":"Drama","task":"Written response / script analysis (Component 2)"},{"type":"study","subj":"Physics","task":"PMT notes \u2192 active recall flashcards"},{"type":"study","subj":"Eng Lang","task":"Timed extract analysis + language/structure techniques"}],"days_to_exam":36,"next_exam":"Drama","n_slots":4},{"date":"2026-04-03","weekday":"Fri","phase":"easter","prox":"normal","slots":[{"type":"study","subj":"Chemistry","task":"Equations, mechanisms + recall cards"},{"type":"study","subj":"Eng Lang","task":"Timed extract analysis + language/structure techniques"},{"type":"study","subj":"Drama","task":"Written response / script analysis (Component 2)"},{"type":"pp","subj":"PE","task":"Past paper \u2014 timed conditions \u2192 self-mark with MS"}],"days_to_exam":35,"next_exam":"Drama","n_slots":4},{"date":"2026-04-04","weekday":"Sat","phase":"easter","prox":"normal","slots":[{"type":"study","subj":"Maths","task":"Dr Frost drills \u2014 Red/Amber topics"},{"type":"study","subj":"Biology","task":"PMT notes \u2192 active recall flashcards"},{"type":"study","subj":"Eng Lit","task":"Poetry comparison / prose extract question"},{"type":"study","subj":"Physics","task":"PMT notes \u2192 active recall flashcards"}],"days_to_exam":34,"next_exam":"Drama","n_slots":4},{"date":"2026-04-05","weekday":"Sun","phase":"easter","prox":"normal","slots":[{"type":"study","subj":"Biology","task":"PMT notes \u2192 active recall flashcards"},{"type":"study","subj":"Physics","task":"PMT notes \u2192 active recall flashcards"},{"type":"study","subj":"PE","task":"Long-answer theory questions (AQA)"},{"type":"study","subj":"Eng Lang","task":"Timed extract analysis + language/structure techniques"}],"days_to_exam":33,"next_exam":"Drama","n_slots":4},{"date":"2026-04-06","weekday":"Mon","phase":"easter","prox":"normal","slots":[{"type":"study","subj":"Drama","task":"Written response / script analysis (Component 2)"},{"type":"study","subj":"Maths","task":"Dr Frost drills \u2014 Red/Amber topics"},{"type":"study","subj":"Chemistry","task":"Equations, mechanisms + recall cards"},{"type":"study","subj":"Eng Lit","task":"Poetry comparison / prose extract question"}],"days_to_exam":32,"next_exam":"Drama","n_slots":4},{"date":"2026-04-07","weekday":"Tue","phase":"easter","prox":"normal","slots":[{"type":"study","subj":"Eng Lit","task":"Poetry comparison / prose extract question"},{"type":"study","subj":"Drama","task":"Written response / script analysis (Component 2)"},{"type":"study","subj":"Maths","task":"Dr Frost drills \u2014 Red/Amber topics"},{"type":"pp","subj":"Physics","task":"Past paper \u2014 timed conditions \u2192 self-mark with MS"}],"days_to_exam":31,"next_exam":"Drama","n_slots":4},{"date":"2026-04-08","weekday":"Wed","phase":"easter","prox":"normal","slots":[{"type":"study","subj":"PE","task":"Long-answer theory questions (AQA)"},{"type":"study","subj":"Eng Lang","task":"Timed extract analysis + language/structure techniques"},{"type":"study","subj":"Biology","task":"PMT notes \u2192 active recall flashcards"},{"type":"study","subj":"Physics","task":"PMT notes \u2192 active recall flashcards"}],"days_to_exam":30,"next_exam":"Drama","n_slots":4},{"date":"2026-04-09","weekday":"Thu","phase":"easter","prox":"normal","slots":[{"type":"study","subj":"Maths","task":"Dr Frost drills \u2014 Red/Amber topics"},{"type":"study","subj":"Eng Lit","task":"Poetry comparison / prose extract question"},{"type":"study","subj":"Biology","task":"PMT notes \u2192 active recall flashcards"},{"type":"study","subj":"PE","task":"Long-answer theory questions (AQA)"}],"days_to_exam":29,"next_exam":"Drama","n_slots":4},{"date":"2026-04-10","weekday":"Fri","phase":"easter","prox":"normal","slots":[{"type":"study","subj":"Eng Lang","task":"Timed extract analysis + language/structure techniques"},{"type":"study","subj":"Chemistry","task":"Equations, mechanisms + recall cards"},{"type":"study","subj":"Physics","task":"PMT notes \u2192 active recall flashcards"},{"type":"study","subj":"Drama","task":"Written response / script analysis (Component 2)"}],"days_to_exam":28,"next_exam":"Drama","n_slots":4},{"date":"2026-04-11","weekday":"Sat","phase":"easter","prox":"normal","slots":[{"type":"study","subj":"Eng Lang","task":"Timed extract analysis + language/structure techniques"},{"type":"study","subj":"Maths","task":"Dr Frost drills \u2014 Red/Amber topics"},{"type":"study","subj":"Chemistry","task":"Equations, mechanisms + recall cards"},{"type":"pp","subj":"Biology","task":"Past paper \u2014 timed conditions \u2192 self-mark with MS"}],"days_to_exam":27,"next_exam":"Drama","n_slots":4},{"date":"2026-04-12","weekday":"Sun","phase":"easter","prox":"normal","slots":[{"type":"study","subj":"Biology","task":"PMT notes \u2192 active recall flashcards"},{"type":"study","subj":"Physics","task":"PMT notes \u2192 active recall flashcards"},{"type":"study","subj":"Eng Lit","task":"Poetry comparison / prose extract question"},{"type":"study","subj":"PE","task":"Long-answer theory questions (AQA)"}],"days_to_exam":26,"next_exam":"Drama","n_slots":4},{"date":"2026-04-13","weekday":"Mon","phase":"easter","prox":"normal","slots":[{"type":"study","subj":"Physics","task":"PMT notes \u2192 active recall flashcards"},{"type":"study","subj":"Maths","task":"Dr Frost drills \u2014 Red/Amber topics"},{"type":"study","subj":"Eng Lang","task":"Timed extract analysis + language/structure techniques"},{"type":"study","subj":"Biology","task":"PMT notes \u2192 active recall flashcards"}],"days_to_exam":25,"next_exam":"Drama","n_slots":4},{"date":"2026-04-14","weekday":"Tue","phase":"easter","prox":"normal","slots":[{"type":"study","subj":"Drama","task":"Written response / script analysis (Component 2)"},{"type":"study","subj":"Eng Lit","task":"Poetry comparison / prose extract question"},{"type":"study","subj":"PE","task":"Long-answer theory questions (AQA)"},{"type":"study","subj":"Chemistry","task":"Equations, mechanisms + recall cards"}],"days_to_exam":24,"next_exam":"Drama","n_slots":4},{"date":"2026-04-15","weekday":"Wed","phase":"easter","prox":"normal","slots":[{"type":"study","subj":"Drama","task":"Written response / script analysis (Component 2)"},{"type":"study","subj":"Chemistry","task":"Equations, mechanisms + recall cards"},{"type":"study","subj":"Maths","task":"Dr Frost drills \u2014 Red/Amber topics"},{"type":"pp","subj":"Chemistry","task":"Past paper \u2014 timed conditions \u2192 self-mark with MS"}],"days_to_exam":23,"next_exam":"Drama","n_slots":4},{"date":"2026-04-16","weekday":"Thu","phase":"easter","prox":"normal","slots":[{"type":"study","subj":"Eng Lit","task":"Poetry comparison / prose extract question"},{"type":"study","subj":"PE","task":"Long-answer theory questions (AQA)"},{"type":"study","subj":"Eng Lang","task":"Timed extract analysis + language/structure techniques"},{"type":"study","subj":"Biology","task":"PMT notes \u2192 active recall flashcards"}],"days_to_exam":22,"next_exam":"Drama","n_slots":4},{"date":"2026-04-17","weekday":"Fri","phase":"easter","prox":"normal","slots":[{"type":"study","subj":"PE","task":"Long-answer theory questions (AQA)"},{"type":"study","subj":"Biology","task":"PMT notes \u2192 active recall flashcards"},{"type":"study","subj":"Eng Lit","task":"Poetry comparison / prose extract question"},{"type":"study","subj":"Maths","task":"Dr Frost drills \u2014 Red/Amber topics"}],"days_to_exam":21,"next_exam":"Drama","n_slots":4},{"date":"2026-04-18","weekday":"Sat","phase":"easter","prox":"normal","slots":[{"type":"study","subj":"Chemistry","task":"Equations, mechanisms + recall cards"},{"type":"study","subj":"Drama","task":"Written response / script analysis (Component 2)"},{"type":"study","subj":"Physics","task":"PMT notes \u2192 active recall flashcards"},{"type":"study","subj":"Eng Lang","task":"Timed extract analysis + language/structure techniques"}],"days_to_exam":20,"next_exam":"Drama","n_slots":4},{"date":"2026-04-19","weekday":"Sun","phase":"easter","prox":"normal","slots":[{"type":"study","subj":"Chemistry","task":"Equations, mechanisms + recall cards"},{"type":"study","subj":"Eng Lang","task":"Timed extract analysis + language/structure techniques"},{"type":"study","subj":"Drama","task":"Written response / script analysis (Component 2)"},{"type":"pp","subj":"Maths","task":"Past paper \u2014 timed conditions \u2192 self-mark with MS"}],"days_to_exam":19,"next_exam":"Drama","n_slots":4},{"date":"2026-04-20","weekday":"Mon","phase":"easter","prox":"normal","slots":[{"type":"study","subj":"Maths","task":"Dr Frost drills \u2014 Red/Amber topics"},{"type":"study","subj":"Biology","task":"PMT notes \u2192 active recall flashcards"},{"type":"study","subj":"Eng Lit","task":"Poetry comparison / prose extract question"},{"type":"study","subj":"Physics","task":"PMT notes \u2192 active recall flashcards"}],"days_to_exam":18,"next_exam":"Drama","n_slots":4},{"date":"2026-04-21","weekday":"Tue","phase":"easter","prox":"normal","slots":[{"type":"study","subj":"Biology","task":"PMT notes \u2192 active recall flashcards"},{"type":"study","subj":"Physics","task":"PMT notes \u2192 active recall flashcards"},{"type":"study","subj":"PE","task":"Long-answer theory questions (AQA)"},{"type":"study","subj":"Eng Lang","task":"Timed extract analysis + language/structure techniques"}],"days_to_exam":17,"next_exam":"Drama","n_slots":4},{"date":"2026-04-22","weekday":"Wed","phase":"back-at-school","prox":"normal","slots":[{"type":"study","subj":"Drama","task":"Written response / script analysis (Component 2)"}],"days_to_exam":16,"next_exam":"Drama","n_slots":1},{"date":"2026-04-23","weekday":"Thu","phase":"back-at-school","prox":"normal","slots":[{"type":"pp","subj":"Eng Lang","task":"Past paper \u2014 timed conditions \u2192 self-mark with MS"}],"days_to_exam":15,"next_exam":"Drama","n_slots":1},{"date":"2026-04-24","weekday":"Fri","phase":"back-at-school","prox":"normal","slots":[{"type":"study","subj":"Chemistry","task":"Equations, mechanisms + recall cards"}],"days_to_exam":14,"next_exam":"Drama","n_slots":1},{"date":"2026-04-27","weekday":"Mon","phase":"back-at-school","prox":"normal","slots":[{"type":"study","subj":"Eng Lit","task":"Poetry comparison / prose extract question"}],"days_to_exam":11,"next_exam":"Drama","n_slots":1},{"date":"2026-04-28","weekday":"Tue","phase":"back-at-school","prox":"normal","slots":[{"type":"study","subj":"Eng Lit","task":"Poetry comparison / prose extract question"}],"days_to_exam":10,"next_exam":"Drama","n_slots":1},{"date":"2026-04-29","weekday":"Wed","phase":"back-at-school","prox":"normal","slots":[{"type":"pp","subj":"Eng Lit","task":"Past paper \u2014 timed conditions \u2192 self-mark with MS"}],"days_to_exam":9,"next_exam":"Drama","n_slots":1},{"date":"2026-04-30","weekday":"Thu","phase":"back-at-school","prox":"normal","slots":[{"type":"study","subj":"Maths","task":"Dr Frost drills \u2014 Red/Amber topics"}],"days_to_exam":8,"next_exam":"Drama","n_slots":1},{"date":"2026-05-01","weekday":"Fri","phase":"back-at-school","prox":"normal","slots":[{"type":"study","subj":"Chemistry","task":"Equations, mechanisms + recall cards"}],"days_to_exam":7,"next_exam":"Drama","n_slots":1},{"date":"2026-05-04","weekday":"Mon","phase":"back-at-school","prox":"prox-5","slots":[{"type":"study","subj":"Drama","task":"Written response / script analysis (Component 2)"}],"days_to_exam":4,"next_exam":"Drama","n_slots":1},{"date":"2026-05-05","weekday":"Tue","phase":"back-at-school","prox":"prox-5","slots":[{"type":"study","subj":"Drama","task":"Written response / script analysis (Component 2)"}],"days_to_exam":3,"next_exam":"Drama","n_slots":1},{"date":"2026-05-06","weekday":"Wed","phase":"back-at-school","prox":"prox-2","slots":[{"type":"study","subj":"Drama","task":"Written response / script analysis (Component 2)"}],"days_to_exam":2,"next_exam":"Drama","n_slots":1},{"date":"2026-05-07","weekday":"Thu","phase":"exam-leave","prox":"prox-1","slots":[{"type":"study","subj":"Drama","task":"Written response / script analysis (Component 2)"},{"type":"study","subj":"Drama","task":"Written response / script analysis (Component 2)"},{"type":"study","subj":"Drama","task":"Written response / script analysis (Component 2)"},{"type":"study","subj":"Drama","task":"Written response / script analysis (Component 2)"},{"type":"study","subj":"Drama","task":"Written response / script analysis (Component 2)"},{"type":"study","subj":"Drama","task":"Written response / script analysis (Component 2)"}],"days_to_exam":1,"next_exam":"Drama","n_slots":6},{"date":"2026-05-08","weekday":"Fri","phase":"exam-leave","prox":"exam-day","slots":[{"type":"exam","subj":"Drama"}],"days_to_exam":0,"next_exam":"Drama","n_slots":0},{"date":"2026-05-09","weekday":"Sat","phase":"exam-leave","prox":"prox-2","slots":[{"type":"study","subj":"Eng Lit","task":"Poetry comparison / prose extract question"},{"type":"study","subj":"Eng Lit","task":"Poetry comparison / prose extract question"},{"type":"study","subj":"Eng Lit","task":"Poetry comparison / prose extract question"},{"type":"study","subj":"Eng Lit","task":"Poetry comparison / prose extract question"},{"type":"study","subj":"Eng Lit","task":"Poetry comparison / prose extract question"},{"type":"study","subj":"PE","task":"Long-answer theory questions (AQA)"}],"days_to_exam":2,"next_exam":"Eng Lit","n_slots":6},{"date":"2026-05-10","weekday":"Sun","phase":"exam-leave","prox":"prox-1","slots":[{"type":"study","subj":"Eng Lit","task":"Poetry comparison / prose extract question"},{"type":"study","subj":"Eng Lit","task":"Poetry comparison / prose extract question"},{"type":"study","subj":"Eng Lit","task":"Poetry comparison / prose extract question"},{"type":"study","subj":"Eng Lit","task":"Poetry comparison / prose extract question"},{"type":"study","subj":"Eng Lit","task":"Poetry comparison / prose extract question"},{"type":"study","subj":"Eng Lit","task":"Poetry comparison / prose extract question"}],"days_to_exam":1,"next_exam":"Eng Lit","n_slots":6},{"date":"2026-05-11","weekday":"Mon","phase":"exam-leave","prox":"exam-day","slots":[{"type":"exam","subj":"Eng Lit"}],"days_to_exam":0,"next_exam":"Eng Lit","n_slots":0},{"date":"2026-05-12","weekday":"Tue","phase":"exam-leave","prox":"exam-day","slots":[{"type":"exam","subj":"Biology"}],"days_to_exam":0,"next_exam":"Biology","n_slots":0},{"date":"2026-05-13","weekday":"Wed","phase":"exam-leave","prox":"prox-1","slots":[{"type":"study","subj":"Maths","task":"Dr Frost drills \u2014 Red/Amber topics"},{"type":"study","subj":"Maths","task":"Dr Frost drills \u2014 Red/Amber topics"},{"type":"study","subj":"Maths","task":"Dr Frost drills \u2014 Red/Amber topics"},{"type":"study","subj":"Maths","task":"Dr Frost drills \u2014 Red/Amber topics"},{"type":"study","subj":"Maths","task":"Dr Frost drills \u2014 Red/Amber topics"},{"type":"study","subj":"Maths","task":"Dr Frost drills \u2014 Red/Amber topics"}],"days_to_exam":1,"next_exam":"Maths","n_slots":6},{"date":"2026-05-14","weekday":"Thu","phase":"exam-leave","prox":"exam-day","slots":[{"type":"exam","subj":"Maths"}],"days_to_exam":0,"next_exam":"Maths","n_slots":0},{"date":"2026-05-15","weekday":"Fri","phase":"exam-leave","prox":"prox-5","slots":[{"type":"study","subj":"Chemistry","task":"Equations, mechanisms + recall cards"},{"type":"study","subj":"Chemistry","task":"Equations, mechanisms + recall cards"},{"type":"study","subj":"Chemistry","task":"Equations, mechanisms + recall cards"},{"type":"study","subj":"Eng Lang","task":"Timed extract analysis + language/structure techniques"},{"type":"study","subj":"Biology","task":"PMT notes \u2192 active recall flashcards"},{"type":"study","subj":"Physics","task":"PMT notes \u2192 active recall flashcards"}],"days_to_exam":3,"next_exam":"Chemistry","n_slots":6},{"date":"2026-05-16","weekday":"Sat","phase":"exam-leave","prox":"prox-2","slots":[{"type":"study","subj":"Chemistry","task":"Equations, mechanisms + recall cards"},{"type":"study","subj":"Chemistry","task":"Equations, mechanisms + recall cards"},{"type":"study","subj":"Chemistry","task":"Equations, mechanisms + recall cards"},{"type":"study","subj":"Chemistry","task":"Equations, mechanisms + recall cards"},{"type":"study","subj":"Chemistry","task":"Equations, mechanisms + recall cards"},{"type":"study","subj":"Maths","task":"Dr Frost drills \u2014 Red/Amber topics"}],"days_to_exam":2,"next_exam":"Chemistry","n_slots":6},{"date":"2026-05-17","weekday":"Sun","phase":"exam-leave","prox":"prox-1","slots":[{"type":"study","subj":"Chemistry","task":"Equations, mechanisms + recall cards"},{"type":"study","subj":"Chemistry","task":"Equations, mechanisms + recall cards"},{"type":"study","subj":"Chemistry","task":"Equations, mechanisms + recall cards"},{"type":"study","subj":"Chemistry","task":"Equations, mechanisms + recall cards"},{"type":"study","subj":"Chemistry","task":"Equations, mechanisms + recall cards"},{"type":"study","subj":"Chemistry","task":"Equations, mechanisms + recall cards"}],"days_to_exam":1,"next_exam":"Chemistry","n_slots":6},{"date":"2026-05-18","weekday":"Mon","phase":"exam-leave","prox":"exam-day","slots":[{"type":"exam","subj":"Chemistry"}],"days_to_exam":0,"next_exam":"Chemistry","n_slots":0},{"date":"2026-05-19","weekday":"Tue","phase":"exam-leave","prox":"prox-2","slots":[{"type":"study","subj":"Eng Lang","task":"Timed extract analysis + language/structure techniques"},{"type":"study","subj":"Eng Lang","task":"Timed extract analysis + language/structure techniques"},{"type":"study","subj":"Eng Lang","task":"Timed extract analysis + language/structure techniques"},{"type":"study","subj":"Eng Lang","task":"Timed extract analysis + language/structure techniques"},{"type":"study","subj":"Eng Lang","task":"Timed extract analysis + language/structure techniques"},{"type":"study","subj":"Biology","task":"PMT notes \u2192 active recall flashcards"}],"days_to_exam":2,"next_exam":"Eng Lang","n_slots":6},{"date":"2026-05-20","weekday":"Wed","phase":"exam-leave","prox":"prox-1","slots":[{"type":"study","subj":"Eng Lang","task":"Timed extract analysis + language/structure techniques"},{"type":"study","subj":"Eng Lang","task":"Timed extract analysis + language/structure techniques"},{"type":"study","subj":"Eng Lang","task":"Timed extract analysis + language/structure techniques"},{"type":"study","subj":"Eng Lang","task":"Timed extract analysis + language/structure techniques"},{"type":"study","subj":"Eng Lang","task":"Timed extract analysis + language/structure techniques"},{"type":"study","subj":"Eng Lang","task":"Timed extract analysis + language/structure techniques"}],"days_to_exam":1,"next_exam":"Eng Lang","n_slots":6},{"date":"2026-05-21","weekday":"Thu","phase":"exam-leave","prox":"exam-day","slots":[{"type":"exam","subj":"Eng Lang"}],"days_to_exam":0,"next_exam":"Eng Lang","n_slots":0},{"date":"2026-05-22","weekday":"Fri","phase":"exam-leave","prox":"exam-day","slots":[{"type":"exam","subj":"PE"}],"days_to_exam":0,"next_exam":"PE","n_slots":0},{"date":"2026-05-23","weekday":"Sat","phase":"exam-leave","prox":"normal","slots":[{"type":"study","subj":"PE","task":"Long-answer theory questions (AQA)"},{"type":"study","subj":"Chemistry","task":"Equations, mechanisms + recall cards"},{"type":"study","subj":"Physics","task":"PMT notes \u2192 active recall flashcards"},{"type":"study","subj":"Maths","task":"Dr Frost drills \u2014 Red/Amber topics"},{"type":"study","subj":"Chemistry","task":"Equations, mechanisms + recall cards"},{"type":"study","subj":"Biology","task":"PMT notes \u2192 active recall flashcards"}],"days_to_exam":9,"next_exam":"PE","n_slots":6},{"date":"2026-05-24","weekday":"Sun","phase":"exam-leave","prox":"normal","slots":[{"type":"study","subj":"Physics","task":"PMT notes \u2192 active recall flashcards"},{"type":"study","subj":"PE","task":"Long-answer theory questions (AQA)"},{"type":"study","subj":"Physics","task":"PMT notes \u2192 active recall flashcards"},{"type":"study","subj":"Maths","task":"Dr Frost drills \u2014 Red/Amber topics"},{"type":"study","subj":"Biology","task":"PMT notes \u2192 active recall flashcards"},{"type":"pp","subj":"PE","task":"Past paper \u2014 timed conditions \u2192 self-mark with MS"}],"days_to_exam":8,"next_exam":"PE","n_slots":6},{"date":"2026-05-25","weekday":"Mon","phase":"exam-leave","prox":"normal","slots":[{"type":"study","subj":"Chemistry","task":"Equations, mechanisms + recall cards"},{"type":"study","subj":"Chemistry","task":"Equations, mechanisms + recall cards"},{"type":"study","subj":"Maths","task":"Dr Frost drills \u2014 Red/Amber topics"},{"type":"study","subj":"Physics","task":"PMT notes \u2192 active recall flashcards"},{"type":"study","subj":"PE","task":"Long-answer theory questions (AQA)"},{"type":"study","subj":"Biology","task":"PMT notes \u2192 active recall flashcards"}],"days_to_exam":7,"next_exam":"PE","n_slots":6},{"date":"2026-05-26","weekday":"Tue","phase":"exam-leave","prox":"normal","slots":[{"type":"study","subj":"PE","task":"Long-answer theory questions (AQA)"},{"type":"study","subj":"Biology","task":"PMT notes \u2192 active recall flashcards"},{"type":"study","subj":"Maths","task":"Dr Frost drills \u2014 Red/Amber topics"},{"type":"study","subj":"Chemistry","task":"Equations, mechanisms + recall cards"},{"type":"study","subj":"Physics","task":"PMT notes \u2192 active recall flashcards"},{"type":"study","subj":"Chemistry","task":"Equations, mechanisms + recall cards"}],"days_to_exam":6,"next_exam":"PE","n_slots":6},{"date":"2026-05-27","weekday":"Wed","phase":"exam-leave","prox":"prox-5","slots":[{"type":"study","subj":"PE","task":"Long-answer theory questions (AQA)"},{"type":"study","subj":"PE","task":"Long-answer theory questions (AQA)"},{"type":"study","subj":"PE","task":"Long-answer theory questions (AQA)"},{"type":"study","subj":"Maths","task":"Dr Frost drills \u2014 Red/Amber topics"},{"type":"study","subj":"Biology","task":"PMT notes \u2192 active recall flashcards"},{"type":"study","subj":"Physics","task":"PMT notes \u2192 active recall flashcards"}],"days_to_exam":5,"next_exam":"PE","n_slots":6},{"date":"2026-05-28","weekday":"Thu","phase":"exam-leave","prox":"prox-5","slots":[{"type":"study","subj":"PE","task":"Long-answer theory questions (AQA)"},{"type":"study","subj":"PE","task":"Long-answer theory questions (AQA)"},{"type":"study","subj":"PE","task":"Long-answer theory questions (AQA)"},{"type":"study","subj":"Biology","task":"PMT notes \u2192 active recall flashcards"},{"type":"study","subj":"Physics","task":"PMT notes \u2192 active recall flashcards"},{"type":"study","subj":"Maths","task":"Dr Frost drills \u2014 Red/Amber topics"}],"days_to_exam":4,"next_exam":"PE","n_slots":6},{"date":"2026-05-29","weekday":"Fri","phase":"exam-leave","prox":"prox-5","slots":[{"type":"study","subj":"PE","task":"Long-answer theory questions (AQA)"},{"type":"study","subj":"PE","task":"Long-answer theory questions (AQA)"},{"type":"study","subj":"PE","task":"Long-answer theory questions (AQA)"},{"type":"study","subj":"Chemistry","task":"Equations, mechanisms + recall cards"},{"type":"study","subj":"Maths","task":"Dr Frost drills \u2014 Red/Amber topics"},{"type":"study","subj":"Chemistry","task":"Equations, mechanisms + recall cards"}],"days_to_exam":3,"next_exam":"PE","n_slots":6},{"date":"2026-05-30","weekday":"Sat","phase":"exam-leave","prox":"prox-2","slots":[{"type":"study","subj":"PE","task":"Long-answer theory questions (AQA)"},{"type":"study","subj":"PE","task":"Long-answer theory questions (AQA)"},{"type":"study","subj":"PE","task":"Long-answer theory questions (AQA)"},{"type":"study","subj":"PE","task":"Long-answer theory questions (AQA)"},{"type":"study","subj":"PE","task":"Long-answer theory questions (AQA)"},{"type":"study","subj":"Biology","task":"PMT notes \u2192 active recall flashcards"}],"days_to_exam":2,"next_exam":"PE","n_slots":6},{"date":"2026-05-31","weekday":"Sun","phase":"exam-leave","prox":"prox-1","slots":[{"type":"study","subj":"PE","task":"Long-answer theory questions (AQA)"},{"type":"study","subj":"PE","task":"Long-answer theory questions (AQA)"},{"type":"study","subj":"PE","task":"Long-answer theory questions (AQA)"},{"type":"study","subj":"PE","task":"Long-answer theory questions (AQA)"},{"type":"study","subj":"PE","task":"Long-answer theory questions (AQA)"},{"type":"study","subj":"PE","task":"Long-answer theory questions (AQA)"}],"days_to_exam":1,"next_exam":"PE","n_slots":6},{"date":"2026-06-01","weekday":"Mon","phase":"exam-leave","prox":"exam-day","slots":[{"type":"exam","subj":"PE"}],"days_to_exam":0,"next_exam":"PE","n_slots":0},{"date":"2026-06-02","weekday":"Tue","phase":"exam-leave","prox":"exam-day","slots":[{"type":"exam","subj":"Physics"}],"days_to_exam":0,"next_exam":"Physics","n_slots":0},{"date":"2026-06-03","weekday":"Wed","phase":"exam-leave","prox":"exam-day","slots":[{"type":"exam","subj":"Maths"}],"days_to_exam":0,"next_exam":"Maths","n_slots":0},{"date":"2026-06-04","weekday":"Thu","phase":"exam-leave","prox":"prox-5","slots":[{"type":"study","subj":"Biology","task":"PMT notes \u2192 active recall flashcards"},{"type":"study","subj":"Biology","task":"PMT notes \u2192 active recall flashcards"},{"type":"study","subj":"Biology","task":"PMT notes \u2192 active recall flashcards"},{"type":"study","subj":"Physics","task":"PMT notes \u2192 active recall flashcards"},{"type":"study","subj":"Chemistry","task":"Equations, mechanisms + recall cards"},{"type":"study","subj":"Physics","task":"PMT notes \u2192 active recall flashcards"}],"days_to_exam":4,"next_exam":"Biology","n_slots":6},{"date":"2026-06-05","weekday":"Fri","phase":"exam-leave","prox":"prox-5","slots":[{"type":"study","subj":"Biology","task":"PMT notes \u2192 active recall flashcards"},{"type":"study","subj":"Biology","task":"PMT notes \u2192 active recall flashcards"},{"type":"study","subj":"Biology","task":"PMT notes \u2192 active recall flashcards"},{"type":"study","subj":"Chemistry","task":"Equations, mechanisms + recall cards"},{"type":"study","subj":"Physics","task":"PMT notes \u2192 active recall flashcards"},{"type":"study","subj":"Physics","task":"PMT notes \u2192 active recall flashcards"}],"days_to_exam":3,"next_exam":"Biology","n_slots":6},{"date":"2026-06-06","weekday":"Sat","phase":"exam-leave","prox":"prox-2","slots":[{"type":"study","subj":"Biology","task":"PMT notes \u2192 active recall flashcards"},{"type":"study","subj":"Biology","task":"PMT notes \u2192 active recall flashcards"},{"type":"study","subj":"Biology","task":"PMT notes \u2192 active recall flashcards"},{"type":"study","subj":"Biology","task":"PMT notes \u2192 active recall flashcards"},{"type":"study","subj":"Biology","task":"PMT notes \u2192 active recall flashcards"},{"type":"study","subj":"Chemistry","task":"Equations, mechanisms + recall cards"}],"days_to_exam":2,"next_exam":"Biology","n_slots":6},{"date":"2026-06-07","weekday":"Sun","phase":"exam-leave","prox":"prox-1","slots":[{"type":"study","subj":"Biology","task":"PMT notes \u2192 active recall flashcards"},{"type":"study","subj":"Biology","task":"PMT notes \u2192 active recall flashcards"},{"type":"study","subj":"Biology","task":"PMT notes \u2192 active recall flashcards"},{"type":"study","subj":"Biology","task":"PMT notes \u2192 active recall flashcards"},{"type":"study","subj":"Biology","task":"PMT notes \u2192 active recall flashcards"},{"type":"study","subj":"Biology","task":"PMT notes \u2192 active recall flashcards"}],"days_to_exam":1,"next_exam":"Biology","n_slots":6},{"date":"2026-06-08","weekday":"Mon","phase":"exam-leave","prox":"exam-day","slots":[{"type":"exam","subj":"Biology"}],"days_to_exam":0,"next_exam":"Biology","n_slots":0},{"date":"2026-06-09","weekday":"Tue","phase":"exam-leave","prox":"prox-5","slots":[{"type":"study","subj":"Chemistry","task":"Equations, mechanisms + recall cards"},{"type":"study","subj":"Chemistry","task":"Equations, mechanisms + recall cards"},{"type":"study","subj":"Chemistry","task":"Equations, mechanisms + recall cards"},{"type":"study","subj":"Physics","task":"PMT notes \u2192 active recall flashcards"},{"type":"study","subj":"Physics","task":"PMT notes \u2192 active recall flashcards"},{"type":"study","subj":"Physics","task":"PMT notes \u2192 active recall flashcards"}],"days_to_exam":3,"next_exam":"Chemistry","n_slots":6},{"date":"2026-06-10","weekday":"Wed","phase":"exam-leave","prox":"prox-2","slots":[{"type":"study","subj":"Chemistry","task":"Equations, mechanisms + recall cards"},{"type":"study","subj":"Chemistry","task":"Equations, mechanisms + recall cards"},{"type":"study","subj":"Chemistry","task":"Equations, mechanisms + recall cards"},{"type":"study","subj":"Chemistry","task":"Equations, mechanisms + recall cards"},{"type":"study","subj":"Chemistry","task":"Equations, mechanisms + recall cards"},{"type":"study","subj":"Physics","task":"PMT notes \u2192 active recall flashcards"}],"days_to_exam":2,"next_exam":"Chemistry","n_slots":6},{"date":"2026-06-11","weekday":"Thu","phase":"exam-leave","prox":"prox-1","slots":[{"type":"study","subj":"Chemistry","task":"Equations, mechanisms + recall cards"},{"type":"study","subj":"Chemistry","task":"Equations, mechanisms + recall cards"},{"type":"study","subj":"Chemistry","task":"Equations, mechanisms + recall cards"},{"type":"study","subj":"Chemistry","task":"Equations, mechanisms + recall cards"},{"type":"study","subj":"Chemistry","task":"Equations, mechanisms + recall cards"},{"type":"study","subj":"Chemistry","task":"Equations, mechanisms + recall cards"}],"days_to_exam":1,"next_exam":"Chemistry","n_slots":6},{"date":"2026-06-12","weekday":"Fri","phase":"exam-leave","prox":"exam-day","slots":[{"type":"exam","subj":"Chemistry"}],"days_to_exam":0,"next_exam":"Chemistry","n_slots":0},{"date":"2026-06-13","weekday":"Sat","phase":"exam-leave","prox":"prox-2","slots":[{"type":"study","subj":"Physics","task":"PMT notes \u2192 active recall flashcards"},{"type":"study","subj":"Physics","task":"PMT notes \u2192 active recall flashcards"},{"type":"study","subj":"Physics","task":"PMT notes \u2192 active recall flashcards"},{"type":"study","subj":"Physics","task":"PMT notes \u2192 active recall flashcards"},{"type":"study","subj":"Physics","task":"PMT notes \u2192 active recall flashcards"}],"days_to_exam":2,"next_exam":"Physics","n_slots":6},{"date":"2026-06-14","weekday":"Sun","phase":"exam-leave","prox":"prox-1","slots":[{"type":"study","subj":"Physics","task":"PMT notes \u2192 active recall flashcards"},{"type":"study","subj":"Physics","task":"PMT notes \u2192 active recall flashcards"},{"type":"study","subj":"Physics","task":"PMT notes \u2192 active recall flashcards"},{"type":"study","subj":"Physics","task":"PMT notes \u2192 active recall flashcards"},{"type":"study","subj":"Physics","task":"PMT notes \u2192 active recall flashcards"},{"type":"study","subj":"Physics","task":"PMT notes \u2192 active recall flashcards"}],"days_to_exam":1,"next_exam":"Physics","n_slots":6},{"date":"2026-06-15","weekday":"Mon","phase":"exam-leave","prox":"exam-day","slots":[{"type":"exam","subj":"Physics"}],"days_to_exam":0,"next_exam":"Physics","n_slots":0}];
+
+// ─── HELPERS ───
+const pad = n => String(Math.floor(n)).padStart(2,'0');
+const todayStr = () => new Date().toISOString().slice(0,10);
+function fmtDate(ds){
+  const d=new Date(ds+'T00:00:00');
+  return d.toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'});
+}
+
+// ─── SUBJECT COLOURS ───
+const SUBJ_CLS={
+  "Maths":"Maths","Eng Lang":"EngLang","Eng Lit":"EngLit",
+  "Drama":"Drama","PE":"PE","Physics":"Physics","Biology":"Biology","Chemistry":"Chemistry"
+};
+const SUBJ_DOT={
+  "Maths":"var(--maths)","Eng Lang":"var(--englang)","Eng Lit":"var(--englit)",
+  "Drama":"var(--drama)","PE":"var(--pe)","Physics":"var(--physics)",
+  "Biology":"var(--biology)","Chemistry":"var(--chemistry)"
+};
+const SUBJ_BAR={
+  "Maths":"#3B82F6","Eng Lang":"#F59E0B","Eng Lit":"#10B981",
+  "Drama":"#A78BFA","PE":"#F87171","Physics":"#22D3EE",
+  "Biology":"#4ADE80","Chemistry":"#FBBF24"
+};
+
+const TIME_LABELS={1:["After school"],4:["~9am","~10am","~2pm","~3pm"],6:["~9am","~10am","~11am","~1pm","~2pm","~3pm"]};
+
+// ─── VIEW SWITCHING ───
+let currentView = 'countdown';
+function switchView(v, btn){
+  document.querySelectorAll('.view').forEach(el=>el.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('v-'+v).classList.add('active');
+  btn.classList.add('active');
+  currentView = v;
+  if(v==='timetable') renderTimetable();
+  if(v==='stats') renderStats();
+}
+
+// ─── COUNTDOWN ───
+const FIRST_EXAM = new Date('2026-05-08T13:30:00');
+const REVISION_START = new Date('2026-03-11T00:00:00');
+const EXAMS_LIST=[
+  {d:'2026-05-08T13:30:00',l:'Drama',c:'var(--drama)',b:'OCR'},
+  {d:'2026-05-11T09:00:00',l:'Eng Lit',c:'var(--englit)',b:'Edexcel'},
+  {d:'2026-05-12T13:30:00',l:'Biology P1',c:'var(--biology)',b:'Edexcel'},
+  {d:'2026-05-14T09:00:00',l:'Maths P1',c:'var(--maths)',b:'Edexcel'},
+  {d:'2026-05-18T09:00:00',l:'Chemistry P1',c:'var(--chemistry)',b:'Edexcel'},
+  {d:'2026-05-21T09:00:00',l:'Eng Lang',c:'var(--englang)',b:'Edexcel'},
+  {d:'2026-05-22T09:00:00',l:'PE P1',c:'var(--pe)',b:'AQA'},
+  {d:'2026-06-01T09:00:00',l:'PE P2',c:'var(--pe)',b:'AQA'},
+  {d:'2026-06-02T09:00:00',l:'Physics P1',c:'var(--physics)',b:'Edexcel'},
+  {d:'2026-06-03T09:00:00',l:'Maths P2',c:'var(--maths)',b:'Edexcel'},
+  {d:'2026-06-08T09:00:00',l:'Biology P2',c:'var(--biology)',b:'Edexcel'},
+  {d:'2026-06-12T09:00:00',l:'Chemistry P2',c:'var(--chemistry)',b:'Edexcel'},
+  {d:'2026-06-15T09:00:00',l:'Physics P2',c:'var(--physics)',b:'Edexcel'},
+];
+const QUOTES=[
+  "Every hour now is a run saved for later.",
+  "The pitch rewards preparation. So does the exam hall.",
+  "You\'ve done the work. Trust the process.",
+  "Devon county-level focus. Apply it here.",
+  "Pressure makes diamonds — and grade 9s.",
+  "One topic at a time. One day at a time.",
+  "The best revision is the one you actually do.",
+  "Past papers today. Confidence on exam day.",
+  "Red → Amber → Green. Keep going.",
+  "It\'s not the hours that count. It\'s what you do with them.",
+];
+let qtick=0;
+let prevCD={d:null,h:null,m:null,s:null};
+
+function buildCDList(){
+  const now=new Date();
+  const future=EXAMS_LIST.filter(e=>new Date(e.d)>=now);
+  const nextDt = future.length ? future[0].d : null;
+  document.getElementById('cd-list').innerHTML=EXAMS_LIST.map(e=>{
+    const dt=new Date(e.d);
+    const diff=Math.floor((dt-now)/86400000);
+    const done=dt<now;
+    const isNext=e.d===nextDt;
+    let dl,dc;
+    if(done){dl='Done ✓';dc='done-lbl';}
+    else if(diff===0){dl='Today!';dc='hot';}
+    else if(diff<=3){dl=diff+'d away';dc='hot';}
+    else if(diff<=10){dl=diff+'d away';dc='soon';}
+    else{dl=diff+'d away';dc='';}
+    const fmtd=dt.toLocaleDateString('en-GB',{day:'numeric',month:'short'});
+    return `<div class="cd-exam-row${done?' done':''}${isNext?' next':''}">
+      <div class="cd-exam-left">
+        <span class="cd-dot" style="background:${e.c}"></span>
+        <span>${e.l}</span>
+        <span class="cd-board">${e.b}</span>
+      </div>
+      <div class="cd-exam-right">
+        <span class="cd-edate">${fmtd}</span>
+        <span class="cd-days ${dc}">${dl}</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function tickCD(){
+  const now=new Date();
+  const diff=FIRST_EXAM-now;
+  const sub=document.querySelector('.cd-sub');
+  if(diff<=0){
+    ['cd-d','cd-h','cd-m','cd-s'].forEach(id=>document.getElementById(id).textContent='00');
+    if(sub) sub.textContent='🎓 Drama exam is here — good luck Alfie!';
+    return;
+  }
+  const ts=Math.floor(diff/1000);
+  const d=Math.floor(ts/86400),h=Math.floor((ts%86400)/3600),m=Math.floor((ts%3600)/60),s=ts%60;
+  if(prevCD.d!==d){flash('cd-d');prevCD.d=d;}
+  if(prevCD.h!==h){flash('cd-h');prevCD.h=h;}
+  if(prevCD.m!==m){flash('cd-m');prevCD.m=m;}
+  if(prevCD.s!==s){flash('cd-s');prevCD.s=s;}
+  document.getElementById('cd-d').textContent=pad(d);
+  document.getElementById('cd-h').textContent=pad(h);
+  document.getElementById('cd-m').textContent=pad(m);
+  document.getElementById('cd-s').textContent=pad(s);
+  const total=FIRST_EXAM-REVISION_START;
+  const elapsed=now-REVISION_START;
+  const pct=Math.min(100,Math.max(0,elapsed/total*100));
+  document.getElementById('cd-fill').style.width=pct.toFixed(1)+'%';
+  document.getElementById('cd-pct').textContent=pct.toFixed(1)+'% elapsed';
+  const clk=document.getElementById('cd-clock');
+  clk.innerHTML=`<span>${now.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long'})}</span> · ${now.toLocaleTimeString('en-GB')}`;
+}
+
+function flash(id){
+  const el=document.getElementById(id);
+  el.classList.remove('flash');void el.offsetWidth;el.classList.add('flash');
+}
+
+function rotateCDQuote(){
+  const el=document.getElementById('cd-quote');
+  el.style.opacity='0';
+  setTimeout(()=>{el.textContent='"'+QUOTES[qtick%QUOTES.length]+'"';el.style.opacity='1';qtick++;},400);
+}
+
+// ─── TIMETABLE ───
+let ttFilter='all';
+let ttRendered=false;
+
+function dedupeSlots(slots){
+  const r=[];
+  for(const s of slots){
+    const last=r[r.length-1];
+    if(last&&last.subj===s.subj&&last.type===s.type){last.count=(last.count||1)+1;}
+    else r.push({...s,count:1});
+  }
+  return r;
+}
+
+function slotHTML(sl){
+  const isPP=sl.type==='pp', isExam=sl.type==='exam';
+  const cls=SUBJ_CLS[sl.subj]||sl.subj;
+  const cnt=sl.count>1?`<span class="s-cnt">${sl.count}× hrs</span>`:'';
+  if(isExam) return `<span class="slot slot-exam-chip">🎓 ${sl.subj}</span>`;
+  return `<span class="slot slot-${isPP?'pp':cls}">
+    <span class="s-subj">${sl.subj}</span>
+    <span class="s-task">${isPP?'📄 Past paper — timed → MS':sl.task}</span>${cnt}
+  </span>`;
+}
+
+function proxBadge(prox,days,next){
+  if(prox==='exam-day') return `<span class="prox-badge badge-ex">EXAM</span>`;
+  if(prox==='prox-1')   return `<span class="prox-badge badge-p1">Tomorrow: ${next}</span>`;
+  if(prox==='prox-2')   return `<span class="prox-badge badge-p2">2d→${next}</span>`;
+  if(prox==='prox-5')   return `<span class="prox-badge badge-p5">${days}d→${next}</span>`;
+  return `<span class="prox-badge badge-n">${days?days+'d→'+next:'—'}</span>`;
+}
+
+function phasePill(phase){
+  const m={school:['pill-school','Pre-Easter'],easter:['pill-easter','Easter'],'back-at-school':['pill-back','School'],'exam-leave':['pill-leave','Ex. Leave']};
+  const [c,l]=m[phase]||['',''];
+  return `<span class="phase-pill ${c}">${l}</span>`;
+}
+
+function renderTimetable(forceRebuild){
+  const today=todayStr();
+  const scroll=document.getElementById('tt-scroll');
+  const filtered=ttFilter==='all'?DATA:DATA.filter(d=>d.phase===ttFilter);
+  
+  scroll.innerHTML=filtered.map(d=>{
+    const isPast=d.date<today;
+    const isToday=d.date===today;
+    const isExamDay=d.prox==='exam-day'&&d.slots.every(s=>s.type==='exam');
+    const hdrCls=d.prox!=='normal'&&d.prox!=='exam-day'?d.prox:'';
+    const cardCls=[isPast?'past':'',isToday?'today':'',isExamDay?'exam-day-card':''].filter(Boolean).join(' ');
+    
+    let bodyHTML;
+    if(isExamDay){
+      bodyHTML=`<div class="exam-banner-card">🎓 <strong>${d.slots.map(s=>s.subj).join(' + ')} — Good luck Alfie!</strong></div>`;
+    } else {
+      const deduped=dedupeSlots(d.slots);
+      const slotsH=`<div class="slots">${deduped.map(slotHTML).join('')}</div>`;
+      const times=TIME_LABELS[d.n_slots]||[];
+      const timesH=times.length?`<div class="times-row">${times.join(' · ')}</div>`:'';
+      const doneH=isPast?`<div class="done-stripe">✓ done</div>`:'';
+      bodyHTML=slotsH+(timesH||'')+(doneH||'');
+    }
+    
+    const todayBadge=isToday?`<span class="today-badge">TODAY</span>`:'';
+    return `<div class="day-card ${cardCls}" data-date="${d.date}" data-phase="${d.phase}">
+      <div class="day-card-header${hdrCls?' '+hdrCls:''}">
+        <div class="day-date">${fmtDate(d.date)}${todayBadge?'&nbsp;'+todayBadge:''}</div>
+        <div class="day-meta">${phasePill(d.phase)}${proxBadge(d.prox,d.days_to_exam,d.next_exam)}</div>
+      </div>
+      <div class="day-body">${bodyHTML}</div>
+    </div>`;
+  }).join('');
+  
+  // Show/hide jump btn based on scroll
+  const jumpBtn=document.getElementById('jump-btn');
+  const todayCard=scroll.querySelector(`[data-date="${today}"]`);
+  if(todayCard){
+    jumpBtn.classList.add('show');
+    // Auto-scroll to today on first render
+    if(!ttRendered){
+      setTimeout(()=>todayCard.scrollIntoView({behavior:'smooth',block:'start'}),100);
+      ttRendered=true;
+    }
+  } else {
+    jumpBtn.classList.remove('show');
+  }
+}
+
+function filterTT(phase, btn){
+  ttFilter=phase;
+  ttRendered=false;
+  document.querySelectorAll('.flt-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderTimetable();
+}
+
+function scrollToToday(){
+  const today=todayStr();
+  const card=document.querySelector(`[data-date="${today}"]`);
+  if(card) card.scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+// ─── STATS ───
+function renderStats(){
+  const today=todayStr();
+  const pastDays=DATA.filter(d=>d.date<today&&d.prox!=='exam-day').length;
+  const remainDays=DATA.filter(d=>d.date>=today&&d.prox!=='exam-day').length;
+  const easterHrs=DATA.filter(d=>d.phase==='easter'&&d.prox!=='exam-day').length*4;
+  const leaveHrs=DATA.filter(d=>d.phase==='exam-leave'&&d.prox!=='exam-day').length*6;
+  const ppSessions=DATA.filter(d=>d.slots.some(s=>s.type==='pp')).length;
+  const examDays=DATA.filter(d=>d.prox==='exam-day').length;
+
+  document.getElementById('stat-grid').innerHTML=[
+    [String(pastDays),'Days done'],
+    [String(remainDays),'Days left'],
+    [easterHrs+'h','Easter hrs'],
+    [leaveHrs+'h','Exam leave hrs'],
+    [String(ppSessions),'Past papers'],
+    [String(examDays),'Exam sittings'],
+  ].map(([n,l])=>`<div class="stat-card"><div class="stat-n">${n}</div><div class="stat-l">${l}</div></div>`).join('');
+
+  // Count sessions per subject
+  const counts={};
+  DATA.forEach(d=>d.slots.forEach(s=>{if(s.subj&&s.type!=='exam')counts[s.subj]=(counts[s.subj]||0)+1;}));
+  const maxC=Math.max(...Object.values(counts));
+  document.getElementById('subj-prog').innerHTML=Object.entries(counts).sort((a,b)=>b[1]-a[1]).map(([subj,cnt])=>`
+    <div class="subj-row">
+      <span class="subj-name" style="color:${SUBJ_BAR[subj]||'var(--text)'}">${subj}</span>
+      <div class="subj-bar-wrap"><div class="subj-bar" style="width:${(cnt/maxC*100).toFixed(0)}%;background:${SUBJ_BAR[subj]||'#666'}"></div></div>
+      <span class="subj-count">${cnt}</span>
+    </div>`).join('');
+}
+
+// ─── MIDNIGHT REFRESH ───
+// Recalculate time until next midnight, then refresh timetable so past days tick off
+function scheduleMidnightRefresh(){
+  const now=new Date();
+  const midnight=new Date(now);
+  midnight.setHours(24,0,0,500);
+  const ms=midnight-now;
+  setTimeout(()=>{
+    ttRendered=false;
+    if(currentView==='timetable') renderTimetable();
+    if(currentView==='stats') renderStats();
+    buildCDList();
+    scheduleMidnightRefresh();
+  }, ms);
+}
+
+// ─── INIT ───
+buildCDList();
+tickCD();
+rotateCDQuote();
+setInterval(tickCD, 1000);
+setInterval(rotateCDQuote, 6000);
+setInterval(buildCDList, 60000);
+scheduleMidnightRefresh();
+
+// Register service worker for offline use
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('sw.js').catch(()=>{});
+}
+</script>
+</body>
+</html>
